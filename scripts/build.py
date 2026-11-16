@@ -3,6 +3,7 @@
 import json
 import re
 from collections import Counter
+from hashlib import sha256
 from html import escape
 from pathlib import Path
 
@@ -13,6 +14,11 @@ template = (source / "index.template.html").read_text(encoding="utf-8")
 
 def read_json(name):
     return json.loads((source / name).read_text(encoding="utf-8"))
+
+
+def asset_version(name):
+    content = (root / "docs/assets" / name).read_bytes()
+    return sha256(content).hexdigest()[:12]
 
 
 def links(ids):
@@ -116,6 +122,8 @@ def render_report(language, data, messages, output, pdf_name, asset_root, urls):
         **ui,
         "LANG": language,
         "ASSET_ROOT": asset_root,
+        "CSS_VERSION": asset_version("report.css"),
+        "JS_VERSION": asset_version("report.js"),
         "RU_URL": urls["ru"],
         "EN_URL": urls["en"],
         "LANG_SWITCH": language_switch(language, urls),
