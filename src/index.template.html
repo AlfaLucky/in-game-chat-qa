@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Разбор макета внутриигрового чата, рабочая спецификация и тест-кейсы.">
+  <title>Внутриигровой чат — QA-разбор</title>
+  <link rel="stylesheet" href="assets/report.css">
+  <script defer src="assets/report.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">К содержанию</a>
+  <header class="topbar">
+    <a class="brand" href="#main"><span aria-hidden="true" class="brand-icon">✳</span> QA-разбор</a>
+    <a class="button export" href="in-game-chat-qa.pdf" download><span aria-hidden="true">↓</span> Скачать PDF</a>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <nav aria-label="Содержание">
+        <a href="#main">Обзор</a>
+        <a href="#observations">Что видно на макете</a>
+        <a href="#contracts">Как работает чат</a>
+        <a href="#questions">Вопросы к продукту</a>
+        <a href="#cases">Тест-кейсы</a>
+        <a href="#coverage">Покрытие и запуск</a>
+      </nav>
+    </aside>
+    <main id="main" tabindex="-1">
+      <section class="hero" aria-labelledby="title">
+        <div>
+          <p class="eyebrow">Тестовое задание · Game QA</p>
+          <h1 id="title">Внутриигровой<br>чат</h1>
+          <p class="lead">Спецификация механики и тест-кейсы по макету чата «Кафе».</p>
+          <a class="button primary" href="#cases">К тест-кейсам <span aria-hidden="true">↘</span></a>
+        </div>
+        <figure class="mockup">
+          <div class="mock-window" aria-hidden="true">
+            <div class="mock-tabs"><span><i></i>237 online · Кафе</span><span>Аня <b>×</b></span><span>Лена <b>×</b></span><strong>×</strong></div>
+            <div class="mock-body">
+              <div class="mock-rail"><b>⌖</b><b>♥</b><b>◇</b></div>
+              <div class="mock-thread">
+                <div class="bubble"><b>Игрок</b><p>С кем хламом обменяться?</p><small>8:54</small></div>
+                <div class="bubble energy"><b>Я</b><span>Запрос энергии</span><strong>Забрать 50 ⚡</strong><small>8:59</small></div>
+                <div class="mock-input"><span>Скажите что-нибудь…</span><b>➤</b></div>
+              </div>
+            </div>
+          </div>
+          <figcaption>Схема элементов из предоставленного макета</figcaption>
+        </figure>
+      </section>
+      <dl class="metrics">
+        <div><dd>@@CASE_COUNT@@</dd><dt>Тест-кейса</dt></div>
+        <div><dd>@@P0_COUNT@@</dd><dt>Критических сценариев</dt></div>
+        <div><dd>@@CONTRACT_COUNT@@</dd><dt>Правил рабочей модели</dt></div>
+      </dl>
+      <section id="observations" class="report-section">
+        <h2>Что видно на макете</h2>
+        <p class="intro">Источник — скриншот из задания. Он показывает элементы игры в одном состоянии. Доступ к игровому билду и серверному контракту не предоставлен.</p>
+        <div class="observations">@@OBSERVATIONS@@</div>
+      </section>
+      <section id="contracts" class="report-section">
+        <h2>Как работает чат</h2>
+        <p class="intro">Рабочая модель для ревью с продуктом и разработкой. Тексты ожидаемых результатов в тест-кейсах опираются на эту модель. Источник и связанные вопросы указаны у каждого правила.</p>
+        <div class="flow" aria-label="Основной сценарий">
+          <span>Открыть чат</span><b aria-hidden="true">→</b><span>Выбрать вкладку</span><b aria-hidden="true">→</b><span>Отправить или получить</span><b aria-hidden="true">→</b><span>Сверить результат</span>
+        </div>
+        <div class="rules">@@CONTRACTS@@</div>
+      </section>
+      <section id="questions" class="report-section">
+        <h2>Вопросы к продукту</h2>
+        <p class="intro">Ответы на Q09–Q11 определяют ожидаемый результат у получения энергии. До их согласования соответствующие кейсы остаются проектными.</p>
+        <div class="questions">@@QUESTIONS@@</div>
+      </section>
+      <section id="cases" class="report-section">
+        <h2>Тест-кейсы</h2>
+        <p class="intro">Все кейсы спроектированы по макету. Статус прогона — не запускались. В PDF входят все кейсы.</p>
+        <div class="filters" hidden>
+          <label>Поиск <input type="search" id="case-search" placeholder="ID, сценарий или правило"></label>
+          <label>Раздел <select id="case-group"><option value="">Все разделы</option>@@GROUP_OPTIONS@@</select></label>
+          <label>Приоритет <select id="case-priority"><option value="">Все</option><option>P0</option><option>P1</option><option>P2</option></select></label>
+          <button class="button" id="case-reset" type="button">Сбросить</button>
+        </div>
+        <div class="case-toolbar" hidden>
+          <p id="case-count" role="status" aria-live="polite"></p>
+          <button class="text-button" id="case-expand" type="button">Раскрыть все</button>
+        </div>
+        @@CASE_GROUPS@@
+        <p id="no-cases" hidden>Кейсы не найдены. Попробуйте изменить запрос или сбросить фильтры.</p>
+      </section>
+      <section id="coverage" class="report-section">
+        <h2>Покрытие и запуск</h2>
+        <h3>Данные и окружение</h3>
+        <p>Нужны отдельные аккаунты A, B и C, канал «Кафе», второй канал и личные диалоги A–B, A–C. A — игрок под проверкой, B — собеседник, C — контрольный наблюдатель. Для энергии подготовить сбрасываемые карточки и баланс, для сетевых кейсов — управление доставкой ответов и событий. До начала прогона согласовать лимиты ввода, оба порога энергии и список поддерживаемых клиентов.</p>
+        <p>Для каждой проверки фиксировать версию клиента, аккаунты и начальное состояние, время и ID операций, фактический результат и статус прогона: пройдено, не пройдено, заблокировано или не запускалось. Для спорной доставки сверять ленты обоих игроков и серверный ID. Для энергии сверять баланс и количество операций начисления.</p>
+        <h3>Приоритеты и критерии выпуска</h3>
+        <dl class="priorities">
+          <div><dt>P0</dt><dd>Изоляция ЛС, авторизация, целостность сообщений и баланса, восстановление критических действий.</dd></div>
+          <div><dt>P1</dt><dd>Основные пользовательские потоки и ограничения, которые влияют на штатное использование.</dd></div>
+          <div><dt>P2</dt><dd>Читаемость истории и восстановление медиа при частичном сбое.</dd></div>
+        </dl>
+        <p>Сначала прогнать дымовой набор CHAT-01, CHAT-03, CHAT-07, CHAT-14, CHAT-21, CHAT-23, CHAT-31. Затем проверить P0 с несколькими клиентами и серверной сверкой. Для принятия механики нужны согласованные правила начисления и прав доступа, успешный дымовой набор и отсутствие открытых P0-дефектов.</p>
+        <h3>Матрица трассировки</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th scope="col">Правило</th><th scope="col">Тест-кейсы</th></tr></thead>
+          <tbody>@@COVERAGE@@</tbody>
+        </table></div>
+      </section>
+      <footer>QA-разбор · Внутриигровой чат</footer>
+    </main>
+  </div>
+</body>
+</html>
