@@ -1,4 +1,7 @@
 (() => {
+  const locale = document.documentElement.lang;
+  const languageLink = document.querySelector(".language-switch a");
+  const alternatePage = new URL(languageLink.href);
   const cases = [...document.querySelectorAll(".case")];
   const groups = [...document.querySelectorAll(".case-group")];
   const search = document.querySelector("#case-search");
@@ -9,18 +12,18 @@
   const empty = document.querySelector("#no-cases");
   const expand = document.querySelector("#case-expand");
   const searchableText = new Map(cases.map(item => [
-    item, item.textContent.toLocaleLowerCase("ru").replace(/\s+/g, " ")
+    item, item.textContent.toLocaleLowerCase(locale).replace(/\s+/g, " ")
   ]));
   let visible = cases;
   let printState;
 
   const syncToggleLabel = () => {
     const allOpen = visible.every(item => item.open);
-    expand.textContent = allOpen ? "Свернуть все" : "Раскрыть все";
+    expand.textContent = allOpen ? expand.dataset.collapse : expand.dataset.expand;
   };
 
   const updateFilters = () => {
-    const words = search.value.trim().toLocaleLowerCase("ru").split(/\s+/);
+    const words = search.value.trim().toLocaleLowerCase(locale).split(/\s+/);
     visible = cases.filter(item => {
       const matches = (!group.value || item.dataset.group === group.value)
         && (!priority.value || item.dataset.priority === priority.value)
@@ -31,7 +34,9 @@
     groups.forEach(section => {
       section.hidden = !section.querySelector(".case:not([hidden])");
     });
-    count.textContent = `Показано ${visible.length} из ${cases.length}`;
+    count.textContent = count.dataset.format
+      .replace("{visible}", visible.length)
+      .replace("{total}", cases.length);
     empty.hidden = visible.length > 0;
     expand.hidden = visible.length === 0;
     syncToggleLabel();
@@ -72,7 +77,14 @@
     item.addEventListener("toggle", syncToggleLabel);
   });
 
-  window.addEventListener("hashchange", revealCase);
+  const syncAnchor = () => {
+    const id = location.hash.slice(1);
+    alternatePage.hash = document.getElementById(id) ? location.hash : "";
+    languageLink.href = alternatePage.href;
+    revealCase();
+  };
+
+  window.addEventListener("hashchange", syncAnchor);
   document.querySelector(".table-wrap").addEventListener("click", event => {
     const link = event.target.closest("a");
     if (link && link.hash === location.hash) revealCase();
@@ -90,5 +102,5 @@
   document.querySelector(".filters").hidden = false;
   document.querySelector(".case-toolbar").hidden = false;
   updateFilters();
-  revealCase();
+  syncAnchor();
 })();

@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Review of the Café chat mockup and test cases for the proposed behavior.">
+  <title>In-game chat - QA review</title>
+  <link rel="alternate" hreflang="ru" href="../">
+  <link rel="alternate" hreflang="en" href="./">
+  <link rel="stylesheet" href="../assets/report.css">
+  <script defer src="../assets/report.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="topbar">
+    <a class="brand" href="#main"><span aria-hidden="true" class="brand-icon">✳</span> QA review</a>
+    <div class="header-actions">
+      <nav class="language-switch" aria-label="Report language"><a lang="ru" hreflang="ru" href="../" aria-label="Русский">RU</a><span lang="en" aria-current="page" aria-label="English">EN</span></nav>
+      <a class="button export" href="in-game-chat-qa-en.pdf" download><span aria-hidden="true">↓</span> Download PDF</a>
+    </div>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <nav aria-label="Contents">
+        <a href="#main">Overview</a>
+        <a href="#observations">What the mockup shows</a>
+        <a href="#contracts">How the chat works</a>
+        <a href="#questions">Questions for the product team</a>
+        <a href="#cases">Test cases</a>
+        <a href="#coverage">Test plan</a>
+      </nav>
+    </aside>
+    <main id="main" tabindex="-1">
+      <section class="hero" aria-labelledby="title">
+        <div>
+          <p class="eyebrow">QA take-home assignment</p>
+          <h1 id="title">In-game<br>chat</h1>
+          <p class="lead">How the Café chat works and what to check before release.</p>
+          <a class="button primary" href="#cases">View test cases <span aria-hidden="true">↘</span></a>
+        </div>
+        <figure class="mockup">
+          <div class="mock-window" aria-hidden="true">
+            <div class="mock-tabs"><span><i></i>237 online · Café</span><span>Anya <b>×</b></span><span>Lena <b>×</b></span><strong>×</strong></div>
+            <div class="mock-body">
+              <div class="mock-rail"><b>⌖</b><b>♥</b><b>◇</b></div>
+              <div class="mock-thread">
+                <div class="bubble"><b>Player</b><p>Anyone want to trade junk?</p><small>8:54</small></div>
+                <div class="bubble energy"><b>Me</b><span>Energy request</span><strong>Claim 50 ⚡</strong><small>8:59</small></div>
+                <div class="mock-input"><span>Say something…</span><b>➤</b></div>
+              </div>
+            </div>
+          </div>
+          <figcaption>Chat diagram based on the assignment mockup</figcaption>
+        </figure>
+      </section>
+      <section id="observations" class="report-section">
+        <h2>What the mockup shows</h2>
+        <div class="observations"><article id="M01" class="card"><h3><span>M01</span> Chat window and tabs</h3><p>The chat is open over the game. The top bar shows the Café, a “237 online” counter, and two tabs labelled “Anya” and “Lena”. Each of those tabs has its own close button. Anya’s tab has a red dot. A separate close button on the right applies to the whole window.</p></article>
+<article id="M02" class="card"><h3><span>M02</span> Buttons on the left</h3><p>A map pin, a heart, and a shield sit on the left. The map pin is highlighted. The screenshot does not show which sections these buttons open.</p></article>
+<article id="M03" class="card"><h3><span>M03</span> Messages</h3><p>The feed shows a text message and an image that looks like a sticker. Player names, icons, and timestamps appear next to messages.</p></article>
+<article id="M04" class="card"><h3><span>M04</span> Energy request</h3><p>The feed shows an energy request card with the labels “Me” and “Member” and a “Claim 50” button. The screenshot does not establish who can claim those 50 units or under what conditions.</p></article>
+<article id="M05" class="card"><h3><span>M05</span> Message input and send controls</h3><p>The bottom bar has a “Say something…” field, a sticker icon, and a send arrow. The icon to the left of the field has no label.</p></article></div>
+      </section>
+      <section id="contracts" class="report-section">
+        <h2>How the chat works</h2>
+        <p class="intro">The screenshot shows the interface in one state. The test cases use the assumptions below. Each rule links to a detail from the mockup and a question to resolve.</p>
+        <div class="rules"><article id="R01" class="card"><h3><span>R01</span> Opening and closing chat</h3><p>Chat opens on the Café the first time. On subsequent visits, it returns to the last tab the player can access. The window’s close button hides chat. Closing a private tab removes the tab, and the conversation history is available when it is reopened.</p><p>Closing the active conversation switches chat to the Café. If the last tab is no longer accessible, reopening chat also takes the player to the Café. A click inside chat must not activate a game object underneath it.</p><div class="references">Mockup <a href="#M01">M01</a> <a href="#M05">M05</a> &nbsp; Questions <a href="#Q01">Q01</a></div></article>
+<article id="R02" class="card"><h3><span>R02</span> Who can see messages</h3><p>Members of a public channel can see its messages. Only the two participants in a private conversation receive its history and new messages. The server checks access when a player reads history or sends a message.</p><p>Each tab has its own messages and draft. A response for a previously selected tab must not replace the current feed. When channel access is revoked, the old feed is hidden and the player can no longer send to that channel.</p><div class="references">Mockup <a href="#M01">M01</a> <a href="#M02">M02</a> <a href="#M05">M05</a> &nbsp; Questions <a href="#Q01">Q01</a> <a href="#Q02">Q02</a></div></article>
+<article id="R03" class="card"><h3><span>R03</span> Unread messages and online count</h3><p>Assume the red dot means a new message arrived and the player has not seen it yet. It clears when the last unread message is in view. A player’s own messages do not trigger the dot.</p><p>For testing, assume the Café counts players once, even if they open the game on two devices. When offline, the count is marked as stale or unavailable. It refreshes after reconnecting.</p><div class="references">Mockup <a href="#M01">M01</a> &nbsp; Questions <a href="#Q03">Q03</a> <a href="#Q04">Q04</a></div></article>
+<article id="R04" class="card"><h3><span>R04</span> Message order and scrolling</h3><p>After syncing, the feed follows the order set by the server. Receiving the same event twice does not add a second copy of the message. The client displays server timestamps in the player’s time zone.</p><p>Scrolling up loads older messages without moving the message the player was reading. While the player is reading history, new messages leave the scroll position in place and offer a way to jump to the latest messages. At the bottom of the feed, new messages come into view automatically.</p><div class="references">Mockup <a href="#M03">M03</a> &nbsp; Questions <a href="#Q03">Q03</a> <a href="#Q05">Q05</a></div></article>
+<article id="R05" class="card"><h3><span>R05</span> Sending text</h3><p>The send arrow posts to the active tab. Empty and whitespace-only messages cannot be sent. The client and server use the same way to measure length and apply the same limit.</p><p>The server response indicates whether the message was accepted or rejected. A rejected message can be edited and sent again. When a response is lost, retrying uses the original operation so the other player does not get two copies.</p><div class="references">Mockup <a href="#M03">M03</a> <a href="#M05">M05</a> &nbsp; Questions <a href="#Q06">Q06</a> <a href="#Q07">Q07</a></div></article>
+<article id="R06" class="card"><h3><span>R06</span> Stickers</h3><p>The sticker icon opens the sticker picker. The test cases assume that choosing a sticker sends it immediately to the active tab and leaves the text draft in place. Closing the picker without choosing sends nothing.</p><p>The server checks whether the sticker is available to the player. If its image fails to load, the feed keeps a placeholder and offers a retry.</p><div class="references">Mockup <a href="#M03">M03</a> <a href="#M05">M05</a> &nbsp; Questions <a href="#Q08">Q08</a></div></article>
+<article id="R07" class="card"><h3><span>R07</span> Requesting and claiming energy</h3><p>The test cases assume that players in the channel can see the card and the server checks claim eligibility for each player. An eligible player gets 50 energy from a card once. Whether the player who posted the request can claim from it still needs confirmation.</p><p>The button shows a pending state while the server responds. A successful claim, an already claimed card, an expired card, and a rejection are distinguishable. If the response is lost, the client checks the balance and card state against the server. The claim record and balance increase are committed together.</p><div class="references">Mockup <a href="#M04">M04</a> &nbsp; Questions <a href="#Q09">Q09</a> <a href="#Q10">Q10</a> <a href="#Q11">Q11</a></div></article>
+<article id="R08" class="card"><h3><span>R08</span> Connection loss and account changes</h3><p>Chat shows the connection loss and keeps the draft. On reconnect, it loads anything that arrived during the outage. For a send or claim with no response, the client checks the result or retries with the original operation ID.</p><p>An expired session cannot send a message or claim energy. After signing in with a different account, the previous player’s history, drafts, and events stay hidden. The current account receives updates through one subscription.</p><div class="references">Mockup <a href="#M01">M01</a> <a href="#M03">M03</a> <a href="#M04">M04</a> <a href="#M05">M05</a> &nbsp; Questions <a href="#Q07">Q07</a> <a href="#Q12">Q12</a></div></article>
+<article id="R09" class="card"><h3><span>R09</span> Text display and moderation</h3><p>Chat renders another player’s name and message as plain text, including angle brackets. If the server rejects a message, the sender sees the reason and the recipient does not see the message.</p><p>Confirm the moderation rules, message rate limit, and how very long words wrap. To verify a rejection, check the sender’s screen, the recipient’s feed, and the server response if it is available.</p><div class="references">Mockup <a href="#M03">M03</a> <a href="#M05">M05</a> &nbsp; Questions <a href="#Q06">Q06</a> <a href="#Q13">Q13</a></div></article>
+<article id="R10" class="card"><h3><span>R10</span> Small screens and keyboard controls</h3><p>With the on-screen keyboard open, the player can still send a message, switch tabs, and close chat. On a small screen and with enlarged text, controls do not overlap and the name and timestamp stay with their message.</p><p>If the game supports a keyboard and a screen reader, Tab follows a predictable order. Focus is visible and each icon is announced by its purpose.</p><div class="references">Mockup <a href="#M01">M01</a> <a href="#M03">M03</a> <a href="#M04">M04</a> <a href="#M05">M05</a> &nbsp; Questions <a href="#Q01">Q01</a> <a href="#Q06">Q06</a> <a href="#Q14">Q14</a></div></article></div>
+      </section>
+      <section id="questions" class="report-section">
+        <h2>Questions for the product team</h2>
+        <p class="intro">Start by confirming who can claim energy and how often. The answers to Q09 through Q11 determine the expected results for the energy cases.</p>
+        <div class="questions"><article id="Q01" class="card"><h3><span>Q01</span> How do players open chat and a private tab?</h3><p>What do the map pin, heart, shield, and icon next to the input open? How many private tabs can a player open, and can they still interact with the game outside the chat window?</p></article>
+<article id="Q02" class="card"><h3><span>Q02</span> Who can see channels and private messages?</h3><p>Is the Café shared by the whole game, one server, or one location? What happens to history if a player leaves a channel or the other player blocks them?</p></article>
+<article id="Q03" class="card"><h3><span>Q03</span> When does the red dot clear?</h3><p>Does opening the tab count, or does the player have to see the last message? If they read it on their phone, does the dot clear on their other device?</p></article>
+<article id="Q04" class="card"><h3><span>Q04</span> Who is counted as online?</h3><p>Which players make up the 237? When does the count refresh, how long does a disconnected player count as online, and what does the counter show when offline?</p></article>
+<article id="Q05" class="card"><h3><span>Q05</span> How is chat history stored?</h3><p>How long are older messages kept and how many load at a time? Which time zone and format should the date and time use?</p></article>
+<article id="Q06" class="card"><h3><span>Q06</span> What can players type and send?</h3><p>What is the length limit and how are multi-code-point emoji counted? How should long words wrap? Are line breaks and surrounding spaces kept? When should Enter send a message, including during IME input?</p></article>
+<article id="Q07" class="card"><h3><span>Q07</span> What happens when the server does not respond?</h3><p>When should an error appear, and how long can a retry reuse the original send operation? Can players queue a message while offline?</p></article>
+<article id="Q08" class="card"><h3><span>Q08</span> How do players send a sticker?</h3><p>Does selecting a sticker send it right away, or does the player have to confirm? Are there paid packs? What appears if the picker is empty or fails to load?</p></article>
+<article id="Q09" class="card"><h3><span>Q09</span> Who can claim energy and how? · P0</h3><p>How does a player create a request? Can the requester click “Claim” on their own card? Where does the energy come from, and how many players can claim from one request?</p></article>
+<article id="Q10" class="card"><h3><span>Q10</span> When does a request stop being usable? · P0</h3><p>Is there an expiry, a daily limit, a balance cap, or a limit on recipients? If there is room for fewer than 50 units, does the player get the remainder or is the claim rejected?</p></article>
+<article id="Q11" class="card"><h3><span>Q11</span> What appears after a player clicks “Claim”? · P0</h3><p>How does the UI distinguish a pending response from rejection, expiry, and an already successful claim? Where can the player check their final balance after losing connection?</p></article>
+<article id="Q12" class="card"><h3><span>Q12</span> What is kept after restarting?</h3><p>Does the draft survive quitting the game? Can one account sign in on two devices? How quickly does chat catch up after reconnecting?</p></article>
+<article id="Q13" class="card"><h3><span>Q13</span> How does moderation work?</h3><p>How many messages can be sent within one rate-limit window? What is shown when a message is rejected, and can players report or block someone from chat?</p></article>
+<article id="Q14" class="card"><h3><span>Q14</span> What should the UI be tested on?</h3><p>Which devices, minimum window sizes, input methods, and scaling settings does the game support?</p></article></div>
+      </section>
+      <section id="cases" class="report-section">
+        <h2>Test cases</h2>
+        <p class="intro">The suite contains 34 cases, including 15 P0 cases. They were designed from the mockup and have not been run on a game build.</p>
+        <div class="filters" hidden>
+          <label>Search <input type="search" id="case-search" placeholder="ID, scenario, or rule"></label>
+          <label>Section <select id="case-group"><option value="">All sections</option><option value="nav">Window and tabs</option><option value="history">History and unread messages</option><option value="text">Text and stickers</option><option value="energy">Energy</option><option value="recovery">Recovery and accessibility</option></select></label>
+          <label>Priority <select id="case-priority"><option value="">All</option><option>P0</option><option>P1</option><option>P2</option></select></label>
+          <button class="button" id="case-reset" type="button">Reset</button>
+        </div>
+        <div class="case-toolbar" hidden>
+          <p id="case-count" data-format="Showing {visible} of {total}" role="status" aria-live="polite"></p>
+          <button class="text-button" id="case-expand" data-expand="Expand all" data-collapse="Collapse all" type="button">Expand all</button>
+        </div>
+        <section class="case-group" aria-labelledby="group-nav"><h3 id="group-nav">Window and tabs</h3>
+      <details class="case" id="CHAT-01" data-group="nav" data-priority="P1" open>
+        <summary>
+          <span class="case-id">CHAT-01</span>
+          <span class="case-title">Open, close, and reopen chat</span>
+          <span class="pill p1">P1</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R01">R01</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>A is in the game and has never opened chat.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Open chat.</li><li>Use the window’s close button, then open chat again.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>The first visit shows the Café feed and message field. The close button hides the window. Reopening shows the same channel without duplicating messages.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-02" data-group="nav" data-priority="P1" open>
+        <summary>
+          <span class="case-id">CHAT-02</span>
+          <span class="case-title">Close a private tab and reopen the conversation</span>
+          <span class="pill p1">P1</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R01">R01</a> <a href="#R02">R02</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>A has open conversations with B and C. The conversation with B already contains message m1.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Open the conversation with B and click the close button on that tab.</li><li>Reopen the conversation with B.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>Chat stays open and switches to the Café. C’s tab remains open. When A reopens the conversation with B, m1 appears once.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-03" data-group="nav" data-priority="P0" open>
+        <summary>
+          <span class="case-id">CHAT-03</span>
+          <span class="case-title">Send drafts from two different tabs</span>
+          <span class="pill p0">P0</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R02">R02</a> <a href="#R05">R05</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>A has the Café and a private conversation with B open. B and C can both read the Café.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Type “for B only” in the private tab and “for everyone in the Café” in the public channel. Switch tabs and check the draft in each one.</li><li>Send the message from each tab. Check B’s and C’s feeds.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>Each tab kept its own draft. B sees “for B only” in the private chat and “for everyone in the Café” in the public channel. C sees only the public message.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-04" data-group="nav" data-priority="P0" open>
+        <summary>
+          <span class="case-id">CHAT-04</span>
+          <span class="case-title">Check that an outside player cannot see a private chat</span>
+          <span class="pill p0">P0</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R02">R02</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>A and B have a private conversation containing m1. C is signed in under a separate account. The test environment supports separate read and send checks.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Ask A to message B. Check C’s conversations and incoming events.</li><li>Using C’s session, check how the server handles attempts to read A and B’s conversation history and send a message to it.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>C sees none of the conversation, its history, or A’s new message. The server rejects both operations from C. No message from C appears in A and B’s conversation.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-05" data-group="nav" data-priority="P1" open>
+        <summary>
+          <span class="case-id">CHAT-05</span>
+          <span class="case-title">Switch tabs while history is loading</span>
+          <span class="pill p1">P1</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R02">R02</a> <a href="#R04">R04</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>A has access to two channels with different message histories. The test environment can delay responses.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Open the first channel and hold its history response.</li><li>Open the second channel. Once its messages are visible, release the delayed response.</li><li>Send a message from the second channel.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>The second tab stays active. Messages from the first channel do not appear in it. The new message reaches the second channel.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-06" data-group="nav" data-priority="P0" open>
+        <summary>
+          <span class="case-id">CHAT-06</span>
+          <span class="case-title">Revoke channel access while the player is reading it</span>
+          <span class="pill p0">P0</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R01">R01</a> <a href="#R02">R02</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>A is reading a restricted channel and has a draft in the message field. B will retain access.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Remove A from the channel and check whether A can send the draft.</li><li>Close and reopen chat. As B, check whether A’s text appeared.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>The restricted feed disappears for A. The draft is not posted. Reopening chat takes A to a channel they can access.</dd></div>
+          </dl>
+        </div>
+      </details>
+</section>
+<section class="case-group" aria-labelledby="group-history"><h3 id="group-history">History and unread messages</h3>
+      <details class="case" id="CHAT-07" data-group="history" data-priority="P1" open>
+        <summary>
+          <span class="case-id">CHAT-07</span>
+          <span class="case-title">Show an unread message in another tab</span>
+          <span class="pill p1">P1</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R03">R03</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>A is reading the Café. The private tab with B is open in the background and has no unread messages.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Send a new message from B to A.</li><li>Check the red dot. Open B’s tab and scroll to the new message.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>The dot appears on B’s tab. The Café stays active until A switches tabs. The dot clears once the message is in view.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-08" data-group="history" data-priority="P1" open>
+        <summary>
+          <span class="case-id">CHAT-08</span>
+          <span class="case-title">Receive messages while chat is closed</span>
+          <span class="pill p1">P1</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R01">R01</a> <a href="#R03">R03</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>A has open conversations with B and C and has read both. The conversation with C is active.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Close the chat window. Send two messages from B to A.</li><li>Open chat, check the tabs, and scroll to B’s latest message.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>Chat opens on C’s tab. C’s tab has no dot. B’s dot remains until A sees B’s last message.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-09" data-group="history" data-priority="P1" open>
+        <summary>
+          <span class="case-id">CHAT-09</span>
+          <span class="case-title">Count a player with two sessions only once</span>
+          <span class="pill p1">P1</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R03">R03</a> <a href="#R08">R08</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>The number of players in the test channel is known. B can sign in on two devices.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Connect B’s first session, then the second. Check the count after each sign-in.</li><li>Disconnect the sessions one at a time. Allow for the agreed update delay.</li><li>Disconnect A, then reconnect.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>B’s first session adds one, and the second leaves the count unchanged. The count returns to its starting value after B leaves the last device. While offline, A sees a stale count. It refreshes after reconnecting.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-10" data-group="history" data-priority="P1" open>
+        <summary>
+          <span class="case-id">CHAT-10</span>
+          <span class="case-title">Load earlier messages without jumping the feed</span>
+          <span class="pill p1">P1</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R04">R04</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>The history has at least three pages. Two adjacent responses share one ID. Message m10 is visible near the top of the feed.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Note where m10 is on screen. Load earlier messages.</li><li>Repeat at the next page boundary and scroll to the beginning of the history.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>After the first load, m10 stays in place. The shared message is shown once and the order is preserved. Chat stops requesting empty pages at the beginning of the history.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-11" data-group="history" data-priority="P1" open>
+        <summary>
+          <span class="case-id">CHAT-11</span>
+          <span class="case-title">Deliver events out of order and more than once</span>
+          <span class="pill p1">P1</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R04">R04</a> <a href="#R08">R08</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>The server orders the messages m1, m2, m3. The test environment can change their delivery order.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Deliver m1, then m3, then m2 twice.</li><li>Wait for sync and reopen the tab.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>The feed contains three messages in the order m1, m2, m3. Reopening the tab preserves the count and order.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-12" data-group="history" data-priority="P2" open>
+        <summary>
+          <span class="case-id">CHAT-12</span>
+          <span class="case-title">Receive a new message while reading history</span>
+          <span class="pill p2">P2</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R03">R03</a> <a href="#R04">R04</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>A has scrolled up in the conversation with B to read older messages.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Send a new message from B and check the position of A’s feed.</li><li>Jump to the latest messages and ask B to send another message.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>The first message does not move the part A was reading. Jumping to the latest messages brings it into view. With A already at the bottom, the next message appears immediately.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-13" data-group="history" data-priority="P2" open>
+        <summary>
+          <span class="case-id">CHAT-13</span>
+          <span class="case-title">Check message authors and timestamps around midnight</span>
+          <span class="pill p2">P2</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R04">R04</a> <a href="#R10">R10</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>A has a configured time zone. Two players sent messages before and after midnight in that zone.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Compare each message’s author, icon, and timestamp with the test data.</li><li>Change the time zone and refresh the feed.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>Dates and times reflect the selected zone and agreed format. The names and icons are assigned to the right messages. The server order is unchanged.</dd></div>
+          </dl>
+        </div>
+      </details>
+</section>
+<section class="case-group" aria-labelledby="group-text"><h3 id="group-text">Text and stickers</h3>
+      <details class="case" id="CHAT-14" data-group="text" data-priority="P1" open>
+        <summary>
+          <span class="case-id">CHAT-14</span>
+          <span class="case-title">Send a text message to the Café</span>
+          <span class="pill p1">P1</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R02">R02</a> <a href="#R05">R05</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>A and B are in the Café. C is in another channel. The connection is stable.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>As A, use the arrow to send “Hi, Café! 🙂”.</li><li>Compare the feeds for A, B, and C. Reopen chat as A.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>A sees one confirmed message and an empty input field. B sees one copy with A’s name. C does not see it. Reopening chat does not add another copy for A.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-15" data-group="text" data-priority="P1" open>
+        <summary>
+          <span class="case-id">CHAT-15</span>
+          <span class="case-title">Try to send an empty message</span>
+          <span class="pill p1">P1</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R05">R05</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>A has opened the Café. B can see the channel. The test environment can show whether a send request was issued.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Test an empty field, spaces only, tabs only, and line breaks only.</li><li>In each case, click the arrow if it is available and check whether a send request was issued.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>The send action is disabled or the field shows a validation error. No request is issued and neither feed contains a blank message.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-16" data-group="text" data-priority="P1" open>
+        <summary>
+          <span class="case-id">CHAT-16</span>
+          <span class="case-title">Check the length limit with Cyrillic text and emoji</span>
+          <span class="pill p1">P1</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R05">R05</a> <a href="#R09">R09</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>The limit L and the counting method are known. Test strings of length L−1, L, and L+1 include Cyrillic and multi-code-point emoji.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Try to enter and send each string.</li><li>Compare client behavior with a separate check of server validation.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>The L−1 and L strings are sent in full. L+1 does not create a message. The client and server count the length the same way.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-17" data-group="text" data-priority="P0" open>
+        <summary>
+          <span class="case-id">CHAT-17</span>
+          <span class="case-title">Retry sending a message that already arrived</span>
+          <span class="pill p0">P0</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R05">R05</a> <a href="#R08">R08</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>A and B are in one channel. The test environment records the message but withholds the response until the client times out.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Send “duplicate check”. Verify that B received it.</li><li>After the timeout, click Retry. Reopen the feed for A and B.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>A’s original message becomes confirmed. B still sees one copy. The server ties the retry to the original send and stores one message ID.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-18" data-group="text" data-priority="P1" open>
+        <summary>
+          <span class="case-id">CHAT-18</span>
+          <span class="case-title">Edit a message rejected by moderation</span>
+          <span class="pill p1">P1</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R05">R05</a> <a href="#R09">R09</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>A test phrase is blocked in the test environment. B is reading the channel.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Send the blocked phrase and check the error.</li><li>Edit the text and send it again.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>A sees the reason for rejection and can edit the text. B never sees the blocked phrase. The corrected message appears once for B.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-19" data-group="text" data-priority="P1" open>
+        <summary>
+          <span class="case-id">CHAT-19</span>
+          <span class="case-title">Send a message over the rate limit</span>
+          <span class="pill p1">P1</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R05">R05</a> <a href="#R09">R09</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>The limit is N messages per interval T. A has not sent anything in the current interval.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Send N valid messages and immediately try one more.</li><li>Wait for the limit to reset and send another message.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>B receives the first N messages. The extra message does not appear and A sees a warning. The next send succeeds once the limit resets.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-20" data-group="text" data-priority="P0" open>
+        <summary>
+          <span class="case-id">CHAT-20</span>
+          <span class="case-title">Display angle brackets as plain text</span>
+          <span class="pill p0">P0</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R09">R09</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>A and B are in a test channel. The text “&lt;b&gt;QA&lt;/b&gt; &amp; ‘test’” is allowed by moderation.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Send the string from A and open it as B.</li><li>Refresh B’s history and compare the text again.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>B sees the original characters, including angle brackets. The tags do not make QA bold. Neighboring messages and controls look and work as before.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-21" data-group="text" data-priority="P1" open>
+        <summary>
+          <span class="case-id">CHAT-21</span>
+          <span class="case-title">Send a sticker and keep the text draft</span>
+          <span class="pill p1">P1</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R02">R02</a> <a href="#R06">R06</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>A has typed a draft in B’s private tab. A sticker is available. C is reading the public chat.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Open and close the picker without selecting a sticker.</li><li>Reopen the picker and select an available sticker.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>Closing the picker sends nothing. Selecting the sticker adds one copy to each of A’s and B’s private feeds. C does not see it. A’s draft is still in the field.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-22" data-group="text" data-priority="P2" open>
+        <summary>
+          <span class="case-id">CHAT-22</span>
+          <span class="case-title">Check sticker rejection and an image load failure</span>
+          <span class="pill p2">P2</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R06">R06</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>The test environment can revoke access to one sticker and separately break image loading for a second sticker.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>After opening the picker, revoke access to the first sticker and try to send it.</li><li>Send the second sticker. Check the load failure as B, restore the image, and retry loading.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>The first sticker does not reach B and A sees a rejection. B sees a placeholder for the second sticker without a scroll jump. After retrying, the image appears in the same message.</dd></div>
+          </dl>
+        </div>
+      </details>
+</section>
+<section class="case-group" aria-labelledby="group-energy"><h3 id="group-energy">Energy</h3>
+      <details class="case" id="CHAT-23" data-group="energy" data-priority="P0" open>
+        <summary>
+          <span class="case-id">CHAT-23</span>
+          <span class="case-title">Claim 50 energy</span>
+          <span class="pill p0">P0</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R07">R07</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>A can claim energy from card r1. A’s balance is 120, the cap is at least 170, and no other balance changes are expected.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Click “Claim 50”. Check the card and balance against the test environment.</li><li>Close and reopen chat.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>After the pending state, the card shows a successful claim. The balance is 170. There is one +50 entry for A and r1. The button cannot be used after reopening chat.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-24" data-group="energy" data-priority="P0" open>
+        <summary>
+          <span class="case-id">CHAT-24</span>
+          <span class="case-title">Click Claim several times in quick succession</span>
+          <span class="pill p0">P0</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R07">R07</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>A has access to card r1 and has 120 energy. The cap is at least 170. The server response is delayed.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Click the button several times quickly.</li><li>Wait for the response, reopen chat, and check the balance and credit entries.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>The button is disabled while the server responds. The final balance is 170 with one credit entry. A cannot claim from r1 a second time.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-25" data-group="energy" data-priority="P0" open>
+        <summary>
+          <span class="case-id">CHAT-25</span>
+          <span class="case-title">Claim energy from two devices at once</span>
+          <span class="pill p0">P0</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R07">R07</a> <a href="#R08">R08</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>A is signed in to the same account on two devices. Card r1 appears on both. The balance is 120 and the cap is at least 170.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Click “Claim” on both devices before the first response arrives.</li><li>Wait for both screens to update. Check the balance and credit history.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>The final balance is 170 with one +50 entry. Both devices show that the energy from r1 has already been claimed.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-26" data-group="energy" data-priority="P0" open>
+        <summary>
+          <span class="case-id">CHAT-26</span>
+          <span class="case-title">Lose the connection after energy is credited</span>
+          <span class="pill p0">P0</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R07">R07</a> <a href="#R08">R08</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>A can claim r1 and has 120 energy. The cap is at least 170. The test environment can interrupt the connection after recording the credit.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Click “Claim 50” and cut the connection after the credit is recorded but before the response reaches the client.</li><li>Reconnect. If chat offers a retry, use it. Check r1 and the balance.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>While the result is unknown, chat does not show a false success or final rejection. After checking with the server, r1 is shown as claimed. The balance is 170 with one +50 entry.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-27" data-group="energy" data-priority="P0" open>
+        <summary>
+          <span class="case-id">CHAT-27</span>
+          <span class="case-title">Click Claim after the request expires</span>
+          <span class="pill p0">P0</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R07">R07</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>Card r1 has an expiry. A can see it and has a balance of 120. The test environment can advance the server clock.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Advance the server clock past r1’s expiry.</li><li>Try to claim from the screen before it refreshes, then refresh chat.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>The server rejects the expired claim. The balance remains 120 and no +50 entry is created. After refreshing, the card is marked expired or hidden, according to the agreed rule.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-28" data-group="energy" data-priority="P0" open>
+        <summary>
+          <span class="case-id">CHAT-28</span>
+          <span class="case-title">Check who can claim energy</span>
+          <span class="pill p0">P0</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R07">R07</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>One test player cannot see r1. A second can see it but cannot claim. Add a separate check for the requester once Q09 is answered.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>As each player, check whether the card and button appear.</li><li>Use the test environment to check that the server rejects a claim from each session.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>The first player does not see the card. The second has no enabled claim button. The server makes no balance changes or credit entries for either player.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-29" data-group="energy" data-priority="P0" open>
+        <summary>
+          <span class="case-id">CHAT-29</span>
+          <span class="case-title">Claim energy near the balance cap</span>
+          <span class="pill p0">P0</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R07">R07</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>The balance cap C is known. The card grants 50 energy. This case assumes no partial grants until Q10 is resolved.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Set the balance to C−50, C−49, and C in separate runs. Open a new card each time and click “Claim”.</li><li>Check the balance, card state, and credit history.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>Starting at C−50 brings the balance to C with one +50 entry. Starting at C−49 or C leaves the balance unchanged with no credit. The card is not marked as claimed, and the player sees the reason.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-30" data-group="energy" data-priority="P0" open>
+        <summary>
+          <span class="case-id">CHAT-30</span>
+          <span class="case-title">Two players try to claim the last available grant</span>
+          <span class="pill p0">P0</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R07">R07</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>This case applies if a request has a shared recipient limit. One claim remains on r1. A and B are both eligible.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Click “Claim” as A and B at the same time.</li><li>Check the responses, both balances, and the number of claims remaining.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>One player receives +50. The other is told that no claims are left and their balance is unchanged. The remaining count is zero and there is one credit entry.</dd></div>
+          </dl>
+        </div>
+      </details>
+</section>
+<section class="case-group" aria-labelledby="group-recovery"><h3 id="group-recovery">Recovery and accessibility</h3>
+      <details class="case" id="CHAT-31" data-group="recovery" data-priority="P0" open>
+        <summary>
+          <span class="case-id">CHAT-31</span>
+          <span class="case-title">Catch up on messages received while offline</span>
+          <span class="pill p0">P0</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R04">R04</a> <a href="#R08">R08</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>A is reading the Café and has typed “later” in the message field. B and C are also in the Café.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Disconnect A. Send one message each from B and C.</li><li>Reconnect A. Once synced, compare A’s feed with B’s. Switch to another tab and back.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>During the outage, the connection status is visible and the draft stays in the field. Both messages appear for A in the original order without duplicates. The draft still reads “later”.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-32" data-group="recovery" data-priority="P0" open>
+        <summary>
+          <span class="case-id">CHAT-32</span>
+          <span class="case-title">Switch accounts after the first session ends</span>
+          <span class="pill p0">P0</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R02">R02</a> <a href="#R08">R08</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>A has a private conversation with B and a draft. C can sign in on the same device. The test environment can end A’s session.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>End A’s session on the server and try to send from the old window.</li><li>Sign in as C and open chat. Ask B to send a new message to A.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>A’s send is rejected and does not appear for B. C sees none of A’s tabs, history, or draft. The new message from B to A is also hidden from C.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-33" data-group="recovery" data-priority="P1" open>
+        <summary>
+          <span class="case-id">CHAT-33</span>
+          <span class="case-title">Use chat with the on-screen keyboard open</span>
+          <span class="pill p1">P1</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R01">R01</a> <a href="#R10">R10</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>Text is enlarged on the smallest supported screen. A game object sits under the chat input.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Open chat and bring up the keyboard, then send a message.</li><li>Open and close the sticker picker, switch tabs, and close chat.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>The input, send arrow, tabs, and close button are reachable. Text and controls are not clipped. Clicking inside chat does not activate the object underneath.</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <details class="case" id="CHAT-34" data-group="recovery" data-priority="P1" open>
+        <summary>
+          <span class="case-id">CHAT-34</span>
+          <span class="case-title">Use chat with a keyboard and screen reader</span>
+          <span class="pill p1">P1</span>
+        </summary>
+        <div class="case-body">
+          <p class="references">Rules <a href="#R05">R05</a> <a href="#R06">R06</a> <a href="#R07">R07</a> <a href="#R10">R10</a></p>
+          <dl>
+            <div><dt>Preconditions</dt><dd>The client supports keyboard input and a screen reader. Chat has a private tab and a card available to claim.</dd></div>
+            <div><dt>Steps</dt><dd><ol><li>Move through the controls using Tab and Shift+Tab.</li><li>Use the keyboard to open and close the sticker picker, send a message, and claim energy.</li></ol></dd></div>
+            <div><dt>Expected result</dt><dd>Focus is visible and follows a predictable order. The screen reader announces controls by their purpose. Closing the picker returns focus to the sticker button. The screen reader announces the send and claim results.</dd></div>
+          </dl>
+        </div>
+      </details>
+</section>
+        <p id="no-cases" hidden>No cases match. Change your search or reset the filters.</p>
+      </section>
+      <section id="coverage" class="report-section">
+        <h2>Test plan</h2>
+        <h3>Test data and environment</h3>
+        <p>Prepare three accounts. A is the primary test player, B is their chat partner, and C is an outside player. Set up the Café, a second channel, and private chats between A and B and between A and C. The test environment should let you reset an energy balance and card or delay a specific server response.</p>
+        <p>Record the client version, accounts, timestamp, operation ID, actual result, and case status. If a message disappears or is duplicated, compare both players’ histories with the server record. For energy, capture the balances before and after and count the credit entries.</p>
+        <h3>Priorities and release criteria</h3>
+        <dl class="priorities">
+          <div><dt>P0</dt><dd>Exposure of private messages, access control errors, lost or duplicate messages, and incorrect balances.</dd></div>
+          <div><dt>P1</dt><dd>Opening chat, sending text and stickers, history, notifications, and input limits.</dd></div>
+          <div><dt>P2</dt><dd>Reading older messages and retrying images that fail to load.</dd></div>
+        </dl>
+        <p>Start with CHAT-01, CHAT-03, CHAT-07, CHAT-14, CHAT-21, CHAT-23, and CHAT-31. Then run the remaining P0 cases, using two devices where needed. Before release, confirm the access and energy rules, pass the initial suite, and resolve any P0 defects.</p>
+        <h3>Which cases cover each rule</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th scope="col">Rule</th><th scope="col">Test cases</th></tr></thead>
+          <tbody><tr><th scope="row"><a href="#R01">R01</a> · Opening and closing chat</th><td><a href="#CHAT-01">CHAT-01</a> <a href="#CHAT-02">CHAT-02</a> <a href="#CHAT-06">CHAT-06</a> <a href="#CHAT-08">CHAT-08</a> <a href="#CHAT-33">CHAT-33</a></td></tr>
+<tr><th scope="row"><a href="#R02">R02</a> · Who can see messages</th><td><a href="#CHAT-02">CHAT-02</a> <a href="#CHAT-03">CHAT-03</a> <a href="#CHAT-04">CHAT-04</a> <a href="#CHAT-05">CHAT-05</a> <a href="#CHAT-06">CHAT-06</a> <a href="#CHAT-14">CHAT-14</a> <a href="#CHAT-21">CHAT-21</a> <a href="#CHAT-32">CHAT-32</a></td></tr>
+<tr><th scope="row"><a href="#R03">R03</a> · Unread messages and online count</th><td><a href="#CHAT-07">CHAT-07</a> <a href="#CHAT-08">CHAT-08</a> <a href="#CHAT-09">CHAT-09</a> <a href="#CHAT-12">CHAT-12</a></td></tr>
+<tr><th scope="row"><a href="#R04">R04</a> · Message order and scrolling</th><td><a href="#CHAT-05">CHAT-05</a> <a href="#CHAT-10">CHAT-10</a> <a href="#CHAT-11">CHAT-11</a> <a href="#CHAT-12">CHAT-12</a> <a href="#CHAT-13">CHAT-13</a> <a href="#CHAT-31">CHAT-31</a></td></tr>
+<tr><th scope="row"><a href="#R05">R05</a> · Sending text</th><td><a href="#CHAT-03">CHAT-03</a> <a href="#CHAT-14">CHAT-14</a> <a href="#CHAT-15">CHAT-15</a> <a href="#CHAT-16">CHAT-16</a> <a href="#CHAT-17">CHAT-17</a> <a href="#CHAT-18">CHAT-18</a> <a href="#CHAT-19">CHAT-19</a> <a href="#CHAT-34">CHAT-34</a></td></tr>
+<tr><th scope="row"><a href="#R06">R06</a> · Stickers</th><td><a href="#CHAT-21">CHAT-21</a> <a href="#CHAT-22">CHAT-22</a> <a href="#CHAT-34">CHAT-34</a></td></tr>
+<tr><th scope="row"><a href="#R07">R07</a> · Requesting and claiming energy</th><td><a href="#CHAT-23">CHAT-23</a> <a href="#CHAT-24">CHAT-24</a> <a href="#CHAT-25">CHAT-25</a> <a href="#CHAT-26">CHAT-26</a> <a href="#CHAT-27">CHAT-27</a> <a href="#CHAT-28">CHAT-28</a> <a href="#CHAT-29">CHAT-29</a> <a href="#CHAT-30">CHAT-30</a> <a href="#CHAT-34">CHAT-34</a></td></tr>
+<tr><th scope="row"><a href="#R08">R08</a> · Connection loss and account changes</th><td><a href="#CHAT-09">CHAT-09</a> <a href="#CHAT-11">CHAT-11</a> <a href="#CHAT-17">CHAT-17</a> <a href="#CHAT-25">CHAT-25</a> <a href="#CHAT-26">CHAT-26</a> <a href="#CHAT-31">CHAT-31</a> <a href="#CHAT-32">CHAT-32</a></td></tr>
+<tr><th scope="row"><a href="#R09">R09</a> · Text display and moderation</th><td><a href="#CHAT-16">CHAT-16</a> <a href="#CHAT-18">CHAT-18</a> <a href="#CHAT-19">CHAT-19</a> <a href="#CHAT-20">CHAT-20</a></td></tr>
+<tr><th scope="row"><a href="#R10">R10</a> · Small screens and keyboard controls</th><td><a href="#CHAT-13">CHAT-13</a> <a href="#CHAT-33">CHAT-33</a> <a href="#CHAT-34">CHAT-34</a></td></tr></tbody>
+        </table></div>
+      </section>
+      <footer>QA review · In-game chat</footer>
+    </main>
+  </div>
+</body>
+</html>

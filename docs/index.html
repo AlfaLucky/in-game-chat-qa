@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Разбор макета чата «Кафе» и тест-кейсы для проверки.">
   <title>Внутриигровой чат — QA-разбор</title>
+  <link rel="alternate" hreflang="ru" href="./">
+  <link rel="alternate" hreflang="en" href="en/">
   <link rel="stylesheet" href="assets/report.css">
   <script defer src="assets/report.js"></script>
 </head>
@@ -12,7 +14,10 @@
   <a class="skip-link" href="#main">К содержанию</a>
   <header class="topbar">
     <a class="brand" href="#main"><span aria-hidden="true" class="brand-icon">✳</span> QA-разбор</a>
-    <a class="button export" href="in-game-chat-qa.pdf" download><span aria-hidden="true">↓</span> Скачать PDF</a>
+    <div class="header-actions">
+      <nav class="language-switch" aria-label="Язык отчёта"><span lang="ru" aria-current="page" aria-label="Русский">RU</span><a lang="en" hreflang="en" href="en/" aria-label="English">EN</a></nav>
+      <a class="button export" href="in-game-chat-qa.pdf" download><span aria-hidden="true">↓</span> Скачать PDF</a>
+    </div>
   </header>
   <div class="layout">
     <aside class="sidebar">
@@ -98,8 +103,8 @@
           <button class="button" id="case-reset" type="button">Сбросить</button>
         </div>
         <div class="case-toolbar" hidden>
-          <p id="case-count" role="status" aria-live="polite"></p>
-          <button class="text-button" id="case-expand" type="button">Раскрыть все</button>
+          <p id="case-count" data-format="Показано {visible} из {total}" role="status" aria-live="polite"></p>
+          <button class="text-button" id="case-expand" data-expand="Раскрыть все" data-collapse="Свернуть все" type="button">Раскрыть все</button>
         </div>
         <section class="case-group" aria-labelledby="group-nav"><h3 id="group-nav">Панель и вкладки</h3>
       <details class="case" id="CHAT-01" data-group="nav" data-priority="P1" open>

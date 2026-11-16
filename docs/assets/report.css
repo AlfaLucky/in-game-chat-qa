@@ -40,6 +40,28 @@ p { margin: .55rem 0 1rem; }
 }
 .brand { color: var(--ink); text-decoration: none; font-weight: 780; display: flex; gap: .65rem; align-items: center; }
 .brand-icon { display: inline-grid; place-items: center; width: 31px; height: 31px; background: var(--purple); border-radius: 8px; color: white; }
+.header-actions { display: flex; align-items: center; gap: .7rem; }
+.language-switch {
+  display: flex;
+  gap: .2rem;
+  padding: .15rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: .78rem;
+  font-weight: 750;
+  line-height: 1;
+}
+.language-switch > * {
+  display: grid;
+  place-items: center;
+  min-width: 32px;
+  min-height: 32px;
+  border-radius: 5px;
+  text-decoration: none;
+}
+.language-switch a:hover { background: white; }
+.language-switch [aria-current] { background: var(--lavender); color: var(--purple-dark); }
+
 .button {
   display: inline-flex;
   align-items: center;
@@ -153,19 +175,26 @@ footer { color: var(--muted); font-size: .82rem; padding: 1.3rem 0 2rem; }
   .mockup { max-width: 450px; }
 }
 @media (max-width: 700px) {
-  .topbar { position: static; }
+  .topbar { padding-inline: 1rem; }
   .layout { display: block; padding-inline: 1rem; }
   .sidebar { position: static; border: 0; padding: .6rem 0; }
   .sidebar nav { display: flex; flex-wrap: wrap; gap: .15rem .35rem; }
   .sidebar a { padding: .18rem .25rem; font-size: .78rem; }
   main { padding-top: 1.4rem; }
   .hero { gap: 1.2rem; }
-  section[id], article[id], details[id], main[id] { scroll-margin-top: 1rem; }
+  section[id], article[id], details[id], main[id] { scroll-margin-top: 4.75rem; }
   .observations, .rules, .questions { grid-template-columns: 1fr; }
   summary { grid-template-columns: 4.5rem minmax(0, 1fr) auto 1rem; gap: .35rem; padding: .58rem .55rem; }
   .case-id, .case-title { font-size: .78rem; }
   .case-body dl div { display: block; }
   .case-body dd { margin-top: .1rem; }
+}
+
+@media (max-width: 380px) {
+  .brand { gap: .35rem; font-size: .86rem; }
+  .brand-icon { width: 25px; height: 25px; }
+  .header-actions { gap: .4rem; }
+  .export { padding-inline: .55rem; font-size: .78rem; }
 }
 
 @page { size: A4; margin: 14mm 14mm 15mm; }
@@ -223,4 +252,11 @@ footer { color: var(--muted); font-size: .82rem; padding: 1.3rem 0 2rem; }
   :root { font-family: Arial, sans-serif; }
   .questions .card { padding-block: 1.4mm; }
   .questions .card p { font-size: 9.25pt; }
+}
+
+@page report-english {
+  @bottom-left { content: "In-game chat · QA review"; }
+}
+@media print {
+  html[lang="en"] body { page: report-english; }
 }
