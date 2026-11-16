@@ -85,7 +85,6 @@ if set(groups) != {case[1] for case in cases}:
 sections = {
     "CASE_COUNT": str(len(cases)),
     "P0_COUNT": str(priorities["P0"]),
-    "CONTRACT_COUNT": str(len(rule_ids)),
     "OBSERVATIONS": cards(data["observations"]),
     "CONTRACTS": rule_cards(),
     "QUESTIONS": cards(data["questions"]),
